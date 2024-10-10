@@ -30,14 +30,56 @@ def handle_hello():
 
     # this is how you can use the Family datastructure by calling its methods
     members = jackson_family.get_all_members()
-    response_body = {
-        "hello": "world",
-        "family": members
-    }
+    response_body = members
 
 
     return jsonify(response_body), 200
 
+
+
+@app.route('/member', methods=['POST'])
+def add_member():
+    body = request.get_json(force=True)
+
+    if not jackson_family.add_member(body):
+        return ({"Message": "Error al agregar familiar"}), 400
+    
+    return ({"Message": "Familiar agregado exitosamente"}),200
+
+@app.route('/member/<int:id>', methods=['GET'])
+def get_single_member(id):
+    member = jackson_family.get_member(id)
+    if not member:
+        return ({"Message": "Error, Familiar no encontrado"}),404
+      
+    formmated_member = {
+        "first_name": member["first_name"],
+        "id": member["id"],
+        "age": member["age"],
+        "lucky_numbers" : member["lucky_numbers"]
+    }
+
+    return jsonify(formmated_member),200
+
+@app.route('/member/<int:id>', methods=['DELETE'])
+def remove_family_member(id):
+    erased = jackson_family.delete_member(id)
+    if not erased:
+        return ({"Message": "Error al eliminar familiar o familiar no encontrado"})
+    
+    return jsonify({'done': True, "message": "Familiar eliminado con éxito"}), 200
+
+
+
+
+
+
+
+
+
+
+
+   
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3000))
